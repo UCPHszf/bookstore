@@ -91,9 +91,10 @@ public class CertainBookStore implements BookStore, StockManager {
         }
     }
 
-    private synchronized void validateRating(Integer Rating) throws BookStoreException {
-        if (Rating < 0 || Rating > 5) {
-            throw new BookStoreException(BookStoreConstants.RATING + Rating + BookStoreConstants.INVALID);
+    private synchronized void validate(BookRating bookRating) throws BookStoreException {
+        int rating = bookRating.getRating();
+        if (BookStoreUtility.isInvalidRating(rating)) {
+            throw new BookStoreException(BookStoreConstants.RATING + rating + BookStoreConstants.INVALID);
         }
     }
 
@@ -321,7 +322,7 @@ public class CertainBookStore implements BookStore, StockManager {
             throw new BookStoreException("numBooks = " + numBooks + ", but it must be positive");
         }
         PriorityQueue<BookStoreBook> queue =
-                new PriorityQueue<>((o1, o2) -> Float.compare(o1.getAverageRating(), o2.getAverageRating()));
+                new PriorityQueue<>((o1, o2) -> Float.compare(o2.getAverageRating(), o1.getAverageRating()));
         List<Book> res = new ArrayList<>();
         queue.addAll(bookMap.values());
         int n = numBooks;
@@ -355,7 +356,7 @@ public class CertainBookStore implements BookStore, StockManager {
         }
         for (BookRating rating : bookRating) {
             validateISBNInStock(rating.getISBN());
-            validateRating(rating.getRating());
+            validate(rating);
         }
         for (BookRating rating : bookRating) {
             BookStoreBook book = bookMap.get(rating.getISBN());
